@@ -41,3 +41,4 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
 
     return decorated
+

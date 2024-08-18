@@ -1,5 +1,5 @@
 # API Security Implementation
-
+ 
 ## Overview
 
 This project is focused on implementing a secure RESTful API using Flask, with JWT-based authentication and authorization. The API ensures that only authorized users can access protected resources, providing a robust foundation for secure web applications.
