@@ -74,7 +74,7 @@ Response:
 Login:
 
 Method: POST
-URL: http://127.0.0.1:5000/api/login
+URL: http://127.0.0.1:5000/api/signup
 Body (JSON):
 {
     "user_id": "example_user"
@@ -82,7 +82,7 @@ Body (JSON):
 Access Protected Route:
 
 Method: GET
-URL: http://127.0.0.1:5000/api/protected
+URL: http://127.0.0.1:5000/api/login
 Headers:
 Authorization: Bearer your_jwt_token
 

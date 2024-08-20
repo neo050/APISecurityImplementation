@@ -6,7 +6,7 @@ def init_routes(app):
     auth_bp = Blueprint('auth', __name__)
 
     # Define routes for the auth blueprint
-    @auth_bp.route('/login', methods=['POST'])
+    @auth_bp.route('/signup', methods=['POST'])
     def login():
         data = request.json
         user_id = data.get('user_id')
@@ -15,7 +15,7 @@ def init_routes(app):
             return jsonify({'token': token}), 200
         return jsonify({'message': 'Invalid credentials'}), 401
 
-    @auth_bp.route('/protected', methods=['GET'])
+    @auth_bp.route('/login', methods=['GET'])
     @token_required
     def protected_route(current_user):
         return jsonify({'message': f'Hello, user {current_user}'}), 200
