@@ -77,7 +77,7 @@ Method: POST
 URL: http://127.0.0.1:5000/api/signup
 Body (JSON):
 {
-    "user_id": "example_user"
+    "user_id": "example_user" 
 }
 Access Protected Route:
 
