@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from api_security_project.app_api.auth import token_required, generate_token, role_required
+from .auth import token_required, generate_token, role_required
 
 def init_routes(app):
     # Auth blueprint
@@ -28,6 +28,12 @@ def init_routes(app):
     @role_required('admin')
     def admin_route(current_user, current_role):
         return jsonify({'message': f'Welcome to the admin dashboard, {current_user}'}), 200
+
+    @auth_bp.route('/editor', methods=['GET'])
+    @token_required
+    @role_required('editor')
+    def editor_route(current_user, current_role):
+        return jsonify({'message': f'Welcome, {current_user}, to the editor dashboard!'}), 200
 
     # Register the blueprint with the app
     app.register_blueprint(auth_bp, url_prefix='/api')
