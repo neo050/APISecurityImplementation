@@ -59,7 +59,6 @@ def init_routes(app):
             user_id = request.form.get('user_id')
             password = request.form.get('password')
 
-
             user = User.query.filter_by(username=user_id).first()
             if user and user.verify_password(password):
                 # Set session variables
