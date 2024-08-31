@@ -29,7 +29,6 @@ def init_routes(app):
                 existing_user = User.query.filter_by(username=username).first()
                 if existing_user:
                     return render_template('register.html', error='User already exists')
-
                 # Find the role by name
                 role = Role.query.filter_by(name=role_name).first()
                 if not role:
