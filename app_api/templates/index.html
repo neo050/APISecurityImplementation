@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h2>Welcome to the Message Board</h2>
+<p>Select a board to view messages:</p>
+<ul>
+    <li><a href="{{ url_for('admin_board') }}">Admin Board</a></li>
+    <li><a href="{{ url_for('user_board') }}">User Dashboard</a></li>
+</ul>
+{% endblock %}

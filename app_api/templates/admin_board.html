@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Board{% endblock %}
+
+{% block content %}
+<h2>Admin Board</h2>
+<ul>
+    {% for message in messages %}
+    <li><strong>{{ message.author }}:</strong> {{ message.content }} <em>at {{ message.timestamp }}</em></li>
+    {% endfor %}
+</ul>
+
+<form action="{{ url_for('post_message', board_type='ADMIN') }}" method="post">
+    <label for="message">Leave a message:</label>
+    <textarea id="message" name="message" required></textarea>
+    <button type="submit">Post</button>
+</form>
+{% endblock %}

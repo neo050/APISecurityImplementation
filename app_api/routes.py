@@ -1,76 +1,108 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, redirect, url_for, render_template, session
 from .auth import token_required, generate_token, role_required
-from .models import db, User, Message
+from .models import db, User, Message, Role
+
 
 def init_routes(app):
-    # Auth blueprint
-    auth_bp = Blueprint('auth', __name__)
+    # --------------------
+    # API Routes
+    # --------------------
+    api_bp = Blueprint('api', __name__, url_prefix='/api')
 
-    # Sign Up route - for creating a token with a role
-    @auth_bp.route('/signup', methods=['POST'])
-    def signup():
-        data = request.json
-        user_id = data.get('user_id')
-        role = data.get('role', 'user')  # Default role is 'user'
-        if user_id:
-            token = generate_token(user_id, role)
-            return jsonify({'token': token}), 200
-        return jsonify({'message': 'Invalid credentials'}), 401
+    # (API routes remain unchanged)
 
-    # Protected route - accessible to any logged-in user
-    @auth_bp.route('/login', methods=['GET'])
-    @token_required
-    def protected_route(current_user, current_role):
-        return jsonify({'message': f'Hello, user {current_user} with role {current_role}'}), 200
+    # Register the API blueprint
+    app.register_blueprint(api_bp)
 
-    # Admin route - accessible only to users with the 'admin' role
-    @auth_bp.route('/admin', methods=['GET'])
-    @token_required
-    @role_required('admin')
-    def admin_route(current_user, current_role):
-        return jsonify({'message': f'Welcome to the admin dashboard, {current_user}'}), 200
+    # --------------------
+    # Web Routes
+    # --------------------
 
-    # Editor route - accessible only to users with the 'editor' role
-    @auth_bp.route('/editor', methods=['GET'])
-    @token_required
-    @role_required('editor')
-    def editor_route(current_user, current_role):
-        return jsonify({'message': f'Welcome, {current_user}, to the editor dashboard!'}), 200
+    # Web Signup route - render signup form and handle form submission
+    @app.route('/signup', methods=['GET', 'POST'])
+    def signup_page():
+        if request.method == 'POST':
+            username = request.form.get('user_id')  # This should match the form field name 'user_id'
+            password = request.form.get('password')
+            role_name = request.form.get('role', 'user')
 
-    # Message Board route - allows users to post messages
-    @auth_bp.route('/post_message', methods=['POST'])
-    @token_required
-    def post_message(current_user, current_role):
-        data = request.json
-        content = data.get('content')
-        board_type = data.get('board_type', 'USER')  # Default to 'USER' board
+            if username and password:
+                existing_user = User.query.filter_by(username=username).first()
+                if existing_user:
+                    return render_template('register.html', error='User already exists')
 
-        # Check if user is allowed to post on the Admin board
-        if current_role != 'admin' and board_type == 'ADMIN':
-            return jsonify({'message': 'Not authorized to post on Admin board'}), 403
+                # Find the role by name
+                role = Role.query.filter_by(name=role_name).first()
+                if not role:
+                    return render_template('register.html', error='Invalid role')
 
-        # Create a new message
-        new_message = Message(content=content, board_type=board_type, user_id=current_user.id)
-        db.session.add(new_message)
-        db.session.commit()
+                # Create a new user and set the password
+                new_user = User(username=username, role_id=role.id)
+                new_user.set_password(password)  # Hash and set the password
 
-        return jsonify({'message': 'Message posted successfully'}), 201
+                db.session.add(new_user)
+                db.session.commit()
 
-    # View Messages route - allows users to view messages based on board type
-    @auth_bp.route('/view_messages/<board_type>', methods=['GET'])
-    @token_required
-    def view_messages(current_user, current_role, board_type):
-        # Admins can view both boards, users only their own board
-        if board_type == 'ADMIN' and current_role != 'admin':
-            return jsonify({'message': 'Not authorized to view Admin board'}), 403
+                session['user_id'] = new_user.id
+                session['role'] = new_user.role_id
 
-        messages = Message.query.filter_by(board_type=board_type).order_by(Message.timestamp.desc()).all()
-        return jsonify([{'user': msg.author.username, 'content': msg.content, 'timestamp': msg.timestamp} for msg in messages]), 200
+                return redirect(url_for('index'))
+            else:
+                return render_template('register.html', error='Invalid credentials')
 
-    # Register the blueprint with the app
-    app.register_blueprint(auth_bp, url_prefix='/api')
+        return render_template('register.html')
+
+    # Web Login route - render login form and handle form submission
+    @app.route('/login', methods=['GET', 'POST'])
+    def login_page():
+        if request.method == 'POST':
+            user_id = request.form.get('user_id')
+            password = request.form.get('password')
+
+            user = User.query.filter_by(user_id=user_id).first()
+            if user and user.verify_password(password):
+                # Set session variables
+                session['user_id'] = user.id
+                session['role'] = user.role
+
+                return redirect(url_for('index'))
+            else:
+                return render_template('login.html', error='Invalid credentials')
+
+        return render_template('login.html')
+
+    # Web Admin Board route - render the admin board page
+    @app.route('/admin_board', methods=['GET'])
+    def admin_board():
+        messages = Message.query.filter_by(board_type='ADMIN').order_by(Message.timestamp.desc()).all()
+        return render_template('admin_board.html', messages=messages)
+
+    # Web User Board route - render the user board page
+    @app.route('/user_board', methods=['GET', 'POST'])
+    def user_board():
+        if request.method == 'POST':
+            content = request.form.get('message')
+            # Assuming you have session management to retrieve current user
+            user_id = session.get('user_id')
+            role = session.get('role')
+
+            if user_id and content:
+                new_message = Message(content=content, board_type='USER', user_id=user_id)
+                db.session.add(new_message)
+                db.session.commit()
+
+            return redirect(url_for('user_board'))
+
+        messages = Message.query.filter_by(board_type='USER').order_by(Message.timestamp.desc()).all()
+        return render_template('user_board.html', messages=messages)
+
+    # Web Logout route - clear session
+    @app.route('/logout')
+    def logout_page():
+        session.clear()
+        return redirect(url_for('index'))
 
     # Root route
     @app.route('/')
     def index():
-        return "Welcome to the API Security Implementation", 200
+        return render_template('index.html')

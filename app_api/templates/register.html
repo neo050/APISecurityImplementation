@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<h2>Sign Up</h2>
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% endif %}
+<form action="{{ url_for('signup_page') }}" method="post">
+    <label for="user_id">User ID:</label>
+    <input type="text" id="user_id" name="user_id" required>
+    <br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+    <br>
+    <label for="role">Role:</label>
+    <select id="role" name="role">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+        <option value="editor">Editor</option>
+    </select>
+    <br>
+    <button type="submit">Sign Up</button>
+</form>
+{% endblock %}

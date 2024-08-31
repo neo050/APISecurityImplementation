@@ -9,7 +9,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    role = db.Column(db.String(10), nullable=False)  # 'ADMIN' or 'USER'
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)  # Foreign key to Role
     messages = db.relationship('Message', backref='author', lazy=True)
 
     def set_password(self, password):
@@ -18,6 +18,12 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(10), unique=True, nullable=False)  # 'ADMIN' or 'USER'
+    users = db.relationship('User', backref='role', lazy=True)
+
 class Message(db.Model):
     __tablename__ = 'messages'
     id = db.Column(db.Integer, primary_key=True)
@@ -25,9 +31,3 @@ class Message(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=db.func.now())
     board_type = db.Column(db.String(10), nullable=False)  # 'ADMIN' or 'USER'
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-class Role(db.Model):
-    __tablename__ = 'roles'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(10), unique=True, nullable=False)
-    users = db.relationship('User', backref='role', lazy=True)
