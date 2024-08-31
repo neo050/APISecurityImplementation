@@ -22,20 +22,21 @@ def init_routes(app):
     @app.route('/signup', methods=['GET', 'POST'])
     def signup_page():
         if request.method == 'POST':
-            username = request.form.get('user_id')  # This should match the form field name 'user_id'
+            username = request.form.get('user_id')
+            email = request.form.get('email')
             password = request.form.get('password')
             role_name = request.form.get('role', 'user')
-            if username and password:
+            if username and email and password:
                 existing_user = User.query.filter_by(username=username).first()
                 if existing_user:
                     return render_template('register.html', error='User already exists')
-                # Find the role by name
-                role = Role.query.filter_by(name=role_name).first()
+                # Ensure role name is correct and exists (case-insensitive lookup)
+                role = Role.query.filter(Role.name.ilike(role_name)).first()
                 if not role:
                     return render_template('register.html', error='Invalid role')
 
                 # Create a new user and set the password
-                new_user = User(username=username, role_id=role.id)
+                new_user = User(username=username, email=email, role_id=role.id)
                 new_user.set_password(password)  # Hash and set the password
 
                 db.session.add(new_user)
