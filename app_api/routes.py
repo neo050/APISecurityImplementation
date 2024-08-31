@@ -25,7 +25,6 @@ def init_routes(app):
             username = request.form.get('user_id')  # This should match the form field name 'user_id'
             password = request.form.get('password')
             role_name = request.form.get('role', 'user')
-
             if username and password:
                 existing_user = User.query.filter_by(username=username).first()
                 if existing_user:
