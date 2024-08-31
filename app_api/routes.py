@@ -22,20 +22,21 @@ def init_routes(app):
     @app.route('/signup', methods=['GET', 'POST'])
     def signup_page():
         if request.method == 'POST':
-            username = request.form.get('user_id')  # This should match the form field name 'user_id'
+            username = request.form.get('user_id')
+            email = request.form.get('email')
             password = request.form.get('password')
             role_name = request.form.get('role', 'user')
-            if username and password:
+            if username and email and password:
                 existing_user = User.query.filter_by(username=username).first()
                 if existing_user:
                     return render_template('register.html', error='User already exists')
-                # Find the role by name
-                role = Role.query.filter_by(name=role_name).first()
+                # Ensure role name is correct and exists (case-insensitive lookup)
+                role = Role.query.filter(Role.name.ilike(role_name)).first()
                 if not role:
                     return render_template('register.html', error='Invalid role')
 
                 # Create a new user and set the password
-                new_user = User(username=username, role_id=role.id)
+                new_user = User(username=username, email=email, role_id=role.id)
                 new_user.set_password(password)  # Hash and set the password
 
                 db.session.add(new_user)
@@ -51,6 +52,7 @@ def init_routes(app):
         return render_template('register.html')
 
     # Web Login route - render login form and handle form submission
+    # Web Login route - render login form and handle form submission
     @app.route('/login', methods=['GET', 'POST'])
     def login_page():
         if request.method == 'POST':
@@ -58,10 +60,10 @@ def init_routes(app):
             password = request.form.get('password')
 
             user = User.query.filter_by(username=user_id).first()
-            if user and user.verify_password(password):
+            if user and user.check_password(password):
                 # Set session variables
                 session['user_id'] = user.id
-                session['role'] = user.role
+                session['role'] = user.role.name  # Store the role name or you can store role.id
 
                 return redirect(url_for('index'))
             else:
@@ -104,3 +106,17 @@ def init_routes(app):
     @app.route('/')
     def index():
         return render_template('index.html')
+
+    # Web Post Message route - handles posting a message
+    @app.route('/post_message', methods=['POST'])
+    def post_message():
+        content = request.form.get('message')
+        # Assuming you have session management to retrieve current user
+        user_id = session.get('user_id')
+
+        if user_id and content:
+            new_message = Message(content=content, board_type='USER', user_id=user_id)
+            db.session.add(new_message)
+            db.session.commit()
+
+        return redirect(url_for('user_board'))
