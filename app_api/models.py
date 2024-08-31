@@ -30,5 +30,5 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, index=True, default=db.func.now())
-    board_type = db.Column(db.String(10), nullable=False)  # 'ADMIN' or 'USER'
+    board_type = db.Column(db.String(10), nullable=False)  # 'USER', 'ADMIN', 'EDITOR'
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)

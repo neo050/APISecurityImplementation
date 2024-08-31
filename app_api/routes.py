@@ -17,7 +17,8 @@ def init_routes(app):
     # --------------------
     # Web Routes
     # --------------------
-
+    def check_role(required_role):
+        return session.get('role') == required_role
     # Web Signup route - render signup form and handle form submission
     @app.route('/signup', methods=['GET', 'POST'])
     def signup_page():
@@ -72,19 +73,48 @@ def init_routes(app):
         return render_template('login.html')
 
     # Web Admin Board route - render the admin board page
-    @app.route('/admin_board', methods=['GET'])
+    @app.route('/admin_board', methods=['GET', 'POST'])
     def admin_board():
-        messages = Message.query.filter_by(board_type='ADMIN').order_by(Message.timestamp.desc()).all()
-        return render_template('admin_board.html', messages=messages)
+        if 'user_id' not in session:
+            return redirect(url_for('login_page'))
 
-    # Web User Board route - render the user board page
+        user_role = session.get('role')
+
+        if request.method == 'POST':
+            if user_role != 'ADMIN':
+                return render_template('admin_board.html', messages=[], error='Access Denied')
+
+            content = request.form.get('message')
+            user_id = session.get('user_id')
+
+            if user_id and content:
+                new_message = Message(content=content, board_type='ADMIN', user_id=user_id)
+                db.session.add(new_message)
+                db.session.commit()
+
+            return redirect(url_for('admin_board'))
+
+        # Only ADMIN can view the ADMIN board
+        if user_role == 'ADMIN':
+            messages = Message.query.filter_by(board_type='ADMIN').order_by(Message.timestamp.desc()).all()
+            return render_template('admin_board.html', messages=messages)
+        else:
+            return render_template('admin_board.html', messages=[], error='Access Denied')
+
+    # View and Post on the USER board
     @app.route('/user_board', methods=['GET', 'POST'])
     def user_board():
+        if 'user_id' not in session:
+            return redirect(url_for('login_page'))
+
+        user_role = session.get('role')
+
         if request.method == 'POST':
+            if user_role not in ['USER', 'EDITOR', 'ADMIN']:
+                return render_template('user_board.html', messages=[], error='Access Denied')
+
             content = request.form.get('message')
-            # Assuming you have session management to retrieve current user
             user_id = session.get('user_id')
-            role = session.get('role')
 
             if user_id and content:
                 new_message = Message(content=content, board_type='USER', user_id=user_id)
@@ -93,8 +123,43 @@ def init_routes(app):
 
             return redirect(url_for('user_board'))
 
-        messages = Message.query.filter_by(board_type='USER').order_by(Message.timestamp.desc()).all()
-        return render_template('user_board.html', messages=messages)
+        # Only ADMIN, EDITOR, and USER can view the USER board
+        if user_role in ['USER', 'EDITOR', 'ADMIN']:
+            messages = Message.query.filter_by(board_type='USER').order_by(Message.timestamp.desc()).all()
+            return render_template('user_board.html', messages=messages)
+        else:
+            return render_template('user_board.html', messages=[], error='Access Denied')
+
+        # View and Post on the EDITOR board
+
+    # View and Post on the EDITOR board
+    @app.route('/editor_board', methods=['GET', 'POST'])
+    def editor_board():
+        if 'user_id' not in session:
+            return redirect(url_for('login_page'))
+
+        user_role = session.get('role')
+
+        if request.method == 'POST':
+            if user_role not in ['EDITOR', 'ADMIN']:
+                return render_template('editor_board.html', messages=[], error='Access Denied')
+
+            content = request.form.get('message')
+            user_id = session.get('user_id')
+
+            if user_id and content:
+                new_message = Message(content=content, board_type='EDITOR', user_id=user_id)
+                db.session.add(new_message)
+                db.session.commit()
+
+            return redirect(url_for('editor_board'))
+
+        # Only ADMIN and EDITOR can write on the EDITOR board, USER can only view
+        if user_role in ['USER', 'EDITOR', 'ADMIN']:
+            messages = Message.query.filter_by(board_type='EDITOR').order_by(Message.timestamp.desc()).all()
+            return render_template('editor_board.html', messages=messages, can_post=user_role in ['EDITOR', 'ADMIN'])
+        else:
+            return render_template('editor_board.html', messages=[], error='Access Denied')
 
     # Web Logout route - clear session
     @app.route('/logout')
@@ -105,8 +170,13 @@ def init_routes(app):
     # Root route
     @app.route('/')
     def index():
+        print(f"User ID in session: {session.get('user_id')}")
+        print(f"User role in session: {session.get('role')}")
         return render_template('index.html')
 
+    """
+    
+    
     # Web Post Message route - handles posting a message
     @app.route('/post_message', methods=['POST'])
     def post_message():
@@ -120,3 +190,5 @@ def init_routes(app):
             db.session.commit()
 
         return redirect(url_for('user_board'))
+   """
+

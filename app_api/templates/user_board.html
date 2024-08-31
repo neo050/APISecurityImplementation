@@ -4,16 +4,20 @@
 
 {% block content %}
 <h2>User Board</h2>
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% endif %}
 <ul>
     {% for message in messages %}
-    <li><strong>{{ message.author }}:</strong> {{ message.content }} <em>at {{ message.timestamp }}</em></li>
+    <li><strong>{{ message.author.username }}:</strong> {{ message.content }} <em>at {{ message.timestamp }}</em></li>
     {% endfor %}
 </ul>
 
-<form action="{{ url_for('post_message') }}" method="post">
+{% if session['role'] in ['USER', 'EDITOR', 'ADMIN'] %}
+<form action="{{ url_for('user_board') }}" method="post">
     <label for="message">Leave a message:</label>
     <textarea id="message" name="message" required></textarea>
     <button type="submit">Post</button>
 </form>
-
+{% endif %}
 {% endblock %}
