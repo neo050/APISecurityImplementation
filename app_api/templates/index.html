@@ -4,21 +4,14 @@
 
 {% block content %}
 <h2>Welcome to the Message Board</h2>
-{% if session.get('user_id') %}
-    <p>Select a board to view messages:</p>
-    <ul>
-        {% if session.get('role') == 'ADMIN' %}
-            <li><a href="{{ url_for('admin_board') }}">Admin Board</a></li>
-            <li><a href="{{ url_for('user_board') }}">User Board</a></li>
-            <li><a href="{{ url_for('editor_board') }}">Editor Board</a></li>
-        {% elif session.get('role') == 'EDITOR' %}
-            <li><a href="{{ url_for('user_board') }}">User Board</a></li>
-            <li><a href="{{ url_for('editor_board') }}">Editor Board</a></li>
-        {% elif session.get('role') == 'USER' %}
-            <li><a href="{{ url_for('user_board') }}">User Board</a></li>
-        {% endif %}
-    </ul>
-{% else %}
-    <p>Please <a href="{{ url_for('login_page') }}">login</a> or <a href="{{ url_for('signup_page') }}">sign up</a> to access the message boards.</p>
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
 {% endif %}
+<p>Select a board to view messages:</p>
+<ul>
+    <li><a href="{{ url_for('admin_board') }}">Admin Board</a></li>
+    <li><a href="{{ url_for('user_board') }}">User Board</a></li>
+    <li><a href="{{ url_for('editor_board') }}">Editor Board</a></li>
+</ul>
+
 {% endblock %}

@@ -14,16 +14,6 @@
                 <li><a href="{{ url_for('index') }}">Home</a></li>
                 {% if session.get('user_id') %}
                     <li><a href="{{ url_for('logout_page') }}">Logout</a></li>
-                    {% if session.get('role') == 'ADMIN' %}
-                        <li><a href="{{ url_for('admin_board') }}">Admin Board</a></li>
-                        <li><a href="{{ url_for('user_board') }}">User Board</a></li>
-                        <li><a href="{{ url_for('editor_board') }}">Editor Board</a></li>
-                    {% elif session.get('role') == 'EDITOR' %}
-                        <li><a href="{{ url_for('user_board') }}">User Board</a></li>
-                        <li><a href="{{ url_for('editor_board') }}">Editor Board</a></li>
-                    {% elif session.get('role') == 'USER' %}
-                        <li><a href="{{ url_for('user_board') }}">User Board</a></li>
-                    {% endif %}
                 {% else %}
                     <li><a href="{{ url_for('login_page') }}">Login</a></li>
                     <li><a href="{{ url_for('signup_page') }}">Sign Up</a></li>
