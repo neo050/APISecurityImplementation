@@ -9,9 +9,10 @@
 {% endif %}
 <p>Select a board to view messages:</p>
 <ul>
-    <li><a href="{{ url_for('admin_board') }}">Admin Board</a></li>
-    <li><a href="{{ url_for('user_board') }}">User Board</a></li>
-    <li><a href="{{ url_for('editor_board') }}">Editor Board</a></li>
+    <li><a href="{{ url_for('web.admin_board') }}">Admin Board</a></li>
+    <li><a href="{{ url_for('web.user_board') }}">User Board</a></li>
+    <li><a href="{{ url_for('web.editor_board') }}">Editor Board</a></li>
 </ul>
+
 
 {% endblock %}

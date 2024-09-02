@@ -11,12 +11,12 @@
         <h1>Message Board</h1>
         <nav>
             <ul>
-                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('web.index') }}">Home</a></li>
                 {% if session.get('user_id') %}
-                    <li><a href="{{ url_for('logout_page') }}">Logout</a></li>
+                    <li><a href="{{ url_for('web.logout_page') }}">Logout</a></li>
                 {% else %}
-                    <li><a href="{{ url_for('login_page') }}">Login</a></li>
-                    <li><a href="{{ url_for('signup_page') }}">Sign Up</a></li>
+                    <li><a href="{{ url_for('web.login_page') }}">Login</a></li>
+                    <li><a href="{{ url_for('web.signup_page') }}">Sign Up</a></li>
                 {% endif %}
             </ul>
         </nav>

@@ -1,9 +1,9 @@
 {% extends "layout.html" %}
 
-{% block title %}Editor Board{% endblock %}
+{% block title %}Admin Board{% endblock %}
 
 {% block content %}
-<h2>Editor Board</h2>
+<h2>Admin Board</h2>
 
 {% if error %}
     <p style="color:red;">{{ error }}</p>
@@ -16,7 +16,7 @@
 </ul>
 
 {% if can_post %}
-<form action="{{ url_for('editor_board') }}" method="post">
+<form action="{{ url_for('web.admin_board') }}" method="post">
     <label for="message">Leave a message:</label>
     <textarea id="message" name="message" required></textarea>
     <button type="submit">Post</button>

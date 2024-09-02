@@ -60,3 +60,8 @@ button {
 button:hover {
     background-color: #4cae4c;
 }
+
+/* CSS to style error messages in red */
+.error {
+    color: red;
+}
